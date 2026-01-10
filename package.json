@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "A flexible Vue 3 + TypeScript CRUD library with schema-driven components and pluggable UI adapters",
   "type": "module",
+  "packageManager": "pnpm@8.0.0",
   "files": [
     "dist"
   ],
