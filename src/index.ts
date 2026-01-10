@@ -21,3 +21,6 @@ export { default as UploadField } from './components/UploadField.vue'
 
 // Plugins
 export * from './plugins'
+
+// Utils
+export * from './utils'
