@@ -2,19 +2,19 @@
 
 [English](./README.md) | 简体中文
 
-一个强大、灵活且可扩展的 Vue 3 CRUD 框架，基于 Schema 驱动，支持多种 UI 框架适配。
+一个强大的、基于 Schema 驱动的 Vue 3 CRUD 组件库,提供开箱即用的增删改查功能。
 
-## 特性
+## ✨ 特性
 
-- 🚀 **Schema 驱动** - 通过 JSON Schema 配置生成完整的 CRUD 界面
-- 🎨 **UI 框架适配** - 支持 Element Plus、Ant Design Vue、Naive UI 等
-- 🔌 **插件系统** - 丰富的插件生态，支持列持久化、导入导出、虚拟滚动等
-- 📦 **开箱即用** - 提供完整的组件库和最佳实践
-- 🛠️ **高度可定制** - 支持自定义渲染、生命周期钩子、表单布局等
-- 🔐 **权限管理** - 内置细粒度权限控制系统
-- 💪 **TypeScript** - 完整的类型支持
+- 🚀 **Schema 驱动**: 通过 JSON Schema 配置即可生成完整的 CRUD 界面
+- 🎨 **多 UI 框架支持**: 支持 Element Plus、Ant Design Vue、Naive UI 等
+- 🔌 **插件系统**: 丰富的插件支持,包括导出、导入、虚拟滚动、行展开等
+- 📦 **组件丰富**: 提供搜索、表格、表单、子表单等多种组件
+- 🛠️ **高度可定制**: 支持自定义渲染、生命周期钩子、字典系统等
+- 💪 **TypeScript**: 完整的类型支持
+- 🎯 **易于使用**: 简洁的 API 设计,快速上手
 
-## 安装
+## 📦 安装
 
 ```bash
 # npm
@@ -29,37 +29,33 @@ pnpm add vectra-crud
 
 ### 安装 UI 适配器
 
-根据你使用的 UI 框架安装对应的适配器：
+根据你使用的 UI 框架安装对应的适配器:
 
 ```bash
 # Element Plus
-npm install @vectra-crud/adapter-element-plus
+npm install @vectra-crud/element-plus
 
 # Ant Design Vue
-npm install @vectra-crud/adapter-ant-design-vue
+npm install @vectra-crud/ant-design-vue
 
 # Naive UI
-npm install @vectra-crud/adapter-naive-ui
+npm install @vectra-crud/naive-ui
 ```
 
-## 快速开始
+## 🚀 快速开始
 
 ### 1. 注册插件
 
 ```typescript
 import { createApp } from 'vue'
 import VectraCrud from 'vectra-crud'
-import ElementPlusAdapter from '@vectra-crud/adapter-element-plus'
+import ElementPlusAdapter from '@vectra-crud/element-plus'
 import 'vectra-crud/dist/style.css'
 
 const app = createApp(App)
 
 app.use(VectraCrud, {
-  adapter: ElementPlusAdapter,
-  // 全局配置
-  api: {
-    baseURL: '/api'
-  }
+  adapter: ElementPlusAdapter
 })
 
 app.mount('#app')
@@ -74,83 +70,162 @@ app.mount('#app')
 
 <script setup lang="ts">
 import { CrudPage } from 'vectra-crud'
-import { ref } from 'vue'
 
 const schema = {
-  fields: [
+  columns: [
     {
-      name: 'id',
+      prop: 'id',
       label: 'ID',
       type: 'number',
-      tableConfig: { width: 80 }
+      tableProps: { width: 80 }
     },
     {
-      name: 'name',
-      label: '名称',
+      prop: 'name',
+      label: '姓名',
       type: 'string',
-      rules: [{ required: true, message: '请输入名称' }]
+      searchable: true,
+      required: true
     },
     {
-      name: 'email',
+      prop: 'email',
       label: '邮箱',
       type: 'string',
-      rules: [{ type: 'email', message: '请输入有效的邮箱' }]
+      searchable: true
     },
     {
-      name: 'status',
+      prop: 'age',
+      label: '年龄',
+      type: 'number'
+    },
+    {
+      prop: 'status',
       label: '状态',
-      type: 'select',
+      type: 'dict',
       dict: 'userStatus',
-      tableConfig: { width: 100 }
-    },
-    {
-      name: 'createTime',
-      label: '创建时间',
-      type: 'datetime',
-      formConfig: { disabled: true }
+      searchable: true
     }
-  ],
-  searchFields: ['name', 'email', 'status'],
-  tableConfig: {
-    rowKey: 'id',
-    pagination: true
-  }
+  ]
 }
 
 const dataSource = {
-  list: async (params) => {
-    const res = await fetch('/api/users', {
+  search: async (params) => {
+    const response = await fetch('/api/users', {
       method: 'POST',
       body: JSON.stringify(params)
     })
-    return res.json()
+    return response.json()
   },
   create: async (data) => {
-    const res = await fetch('/api/users', {
+    const response = await fetch('/api/users', {
       method: 'POST',
       body: JSON.stringify(data)
     })
-    return res.json()
+    return response.json()
   },
   update: async (id, data) => {
-    const res = await fetch(`/api/users/${id}`, {
+    const response = await fetch(`/api/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     })
-    return res.json()
+    return response.json()
   },
   delete: async (id) => {
-    await fetch(`/api/users/${id}`, { method: 'DELETE' })
+    await fetch(`/api/users/${id}`, {
+      method: 'DELETE'
+    })
   }
 }
 </script>
 ```
 
-## 核心组件
+## 🎯 核心概念
+
+### Schema 配置
+
+Schema 是 Vectra CRUD 的核心,它定义了数据的结构、验证规则、显示方式等:
+
+```typescript
+interface ColumnSchema {
+  prop: string                    // 字段名
+  label: string                   // 显示标签
+  type: ColumnType               // 字段类型
+  searchable?: boolean           // 是否可搜索
+  required?: boolean             // 是否必填
+  defaultValue?: any            // 默认值
+  tableProps?: object           // 表格列属性
+  formProps?: object            // 表单项属性
+  searchProps?: object          // 搜索项属性
+  dict?: string                 // 字典标识
+  render?: Function             // 自定义渲染函数
+  rules?: ValidationRule[]      // 验证规则
+  [key: string]: any           // 其他自定义属性
+}
+
+type ColumnType = 
+  | 'string' 
+  | 'number' 
+  | 'boolean' 
+  | 'date' 
+  | 'datetime'
+  | 'dict' 
+  | 'textarea' 
+  | 'upload'
+  | 'icon'
+  // ... 更多类型
+```
+
+### 数据源 (DataSource)
+
+DataSource 定义了如何获取和操作数据:
+
+```typescript
+interface DataSource {
+  search: (params: SearchParams) => Promise<PageResult>
+  detail?: (id: any) => Promise<any>
+  create?: (data: any) => Promise<any>
+  update?: (id: any, data: any) => Promise<any>
+  delete?: (id: any) => Promise<void>
+  bulkDelete?: (ids: any[]) => Promise<void>
+}
+
+interface SearchParams {
+  page: number
+  pageSize: number
+  search?: Record<string, any>
+  sort?: { prop: string; order: 'asc' | 'desc' }
+}
+
+interface PageResult {
+  list: any[]
+  total: number
+}
+```
+
+### 字典系统
+
+字典用于管理下拉选项、标签显示等:
+
+```typescript
+import { defineDict } from 'vectra-crud'
+
+// 静态字典
+defineDict('userStatus', [
+  { label: '正常', value: 1, type: 'success' },
+  { label: '禁用', value: 0, type: 'danger' }
+])
+
+// 动态字典
+defineDict('department', async () => {
+  const response = await fetch('/api/departments')
+  return response.json()
+})
+```
+
+## 📋 组件详解
 
 ### CrudPage
 
-完整的 CRUD 页面组件，集成了搜索、表格、表单等功能。
+完整的 CRUD 页面组件,集成了搜索、表格、表单等功能。
 
 ```vue
 <template>
@@ -158,102 +233,95 @@ const dataSource = {
     :schema="schema"
     :data-source="dataSource"
     :plugins="plugins"
-    :permission="permission"
-    @before-search="handleBeforeSearch"
-    @after-search="handleAfterSearch"
-  >
-    <!-- 自定义工具栏 -->
-    <template #toolbar-left>
-      <el-button type="primary">自定义按钮</el-button>
-    </template>
-    
-    <!-- 自定义列渲染 -->
-    <template #column-status="{ row }">
-      <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-        {{ row.status === 1 ? '启用' : '禁用' }}
-      </el-tag>
-    </template>
-    
-    <!-- 自定义操作列 -->
-    <template #action="{ row }">
-      <el-button link @click="handleCustomAction(row)">
-        自定义操作
-      </el-button>
-    </template>
-  </CrudPage>
+    :table-props="tableProps"
+    :form-props="formProps"
+    @create-success="onCreateSuccess"
+    @update-success="onUpdateSuccess"
+    @delete-success="onDeleteSuccess"
+  />
 </template>
+
+<script setup lang="ts">
+const plugins = [
+  'columnPersist',
+  'export',
+  'import',
+  'inlineEdit',
+  'rowExpand',
+  'virtualScroll',
+  'bulkActions',
+  'permissions'
+]
+
+const tableProps = {
+  stripe: true,
+  border: true,
+  size: 'default'
+}
+
+const formProps = {
+  labelWidth: '120px',
+  layout: 'vertical' // horizontal | vertical | inline
+}
+
+const onCreateSuccess = (data) => {
+  console.log('创建成功:', data)
+}
+</script>
 ```
-
-#### Props
-
-- `schema`: Schema 配置对象
-- `dataSource`: 数据源接口
-- `plugins`: 插件列表
-- `permission`: 权限配置
-- `loading`: 加载状态
-- `tableData`: 外部表格数据（覆盖内部数据）
-
-#### Events
-
-- `before-search`: 搜索前触发
-- `after-search`: 搜索后触发
-- `before-create`: 创建前触发
-- `after-create`: 创建后触发
-- `before-update`: 更新前触发
-- `after-update`: 更新后触发
-- `before-delete`: 删除前触发
-- `after-delete`: 删除后触发
-
-#### Slots
-
-- `toolbar-left`: 工具栏左侧插槽
-- `toolbar-right`: 工具栏右侧插槽
-- `column-{fieldName}`: 自定义列渲染
-- `action`: 操作列插槽
-- `form-{fieldName}`: 自定义表单项渲染
 
 ### SchemaSearch
 
-基于 Schema 的搜索表单组件。
+基于 Schema 的搜索组件。
 
 ```vue
 <template>
   <SchemaSearch
     :schema="searchSchema"
-    :model="searchModel"
-    @search="handleSearch"
-    @reset="handleReset"
-  >
-    <template #field-customField="{ field, model }">
-      <CustomSearchComponent v-model="model[field.name]" />
-    </template>
-  </SchemaSearch>
+    :model-value="searchParams"
+    @update:model-value="onSearchChange"
+    @search="onSearch"
+    @reset="onReset"
+  />
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { SchemaSearch } from 'vectra-crud'
+
 const searchSchema = {
-  fields: [
-    { name: 'keyword', label: '关键词', type: 'string' },
-    { name: 'status', label: '状态', type: 'select', dict: 'status' },
+  columns: [
     {
-      name: 'dateRange',
-      label: '日期范围',
-      type: 'daterange',
-      searchConfig: { span: 2 }
+      prop: 'name',
+      label: '姓名',
+      type: 'string',
+      searchProps: {
+        placeholder: '请输入姓名'
+      }
+    },
+    {
+      prop: 'status',
+      label: '状态',
+      type: 'dict',
+      dict: 'userStatus'
+    },
+    {
+      prop: 'dateRange',
+      label: '创建时间',
+      type: 'daterange'
     }
-  ],
-  layout: 'inline', // inline | grid
-  labelWidth: '80px'
+  ]
 }
 
-const searchModel = ref({})
+const searchParams = ref({})
 
-const handleSearch = (values) => {
-  console.log('搜索参数:', values)
+const onSearch = (params) => {
+  console.log('搜索参数:', params)
+  // 执行搜索逻辑
 }
 
-const handleReset = () => {
-  console.log('重置搜索')
+const onReset = () => {
+  searchParams.value = {}
 }
 </script>
 ```
@@ -265,179 +333,272 @@ const handleReset = () => {
 ```vue
 <template>
   <SchemaTable
-    :schema="tableSchema"
+    :schema="schema"
     :data="tableData"
     :loading="loading"
-    :plugins="plugins"
-    @selection-change="handleSelectionChange"
-    @sort-change="handleSortChange"
+    :pagination="pagination"
+    :selection="true"
+    @selection-change="onSelectionChange"
+    @sort-change="onSortChange"
+    @page-change="onPageChange"
   >
-    <template #column-avatar="{ row }">
-      <el-avatar :src="row.avatar" />
-    </template>
-    
-    <template #expand="{ row }">
-      <div>扩展内容: {{ row.description }}</div>
+    <template #operation="{ row }">
+      <el-button @click="handleEdit(row)">编辑</el-button>
+      <el-button @click="handleDelete(row)">删除</el-button>
     </template>
   </SchemaTable>
 </template>
 
 <script setup lang="ts">
-const tableSchema = {
-  fields: [
-    { name: 'id', label: 'ID', type: 'number', width: 80 },
-    { name: 'name', label: '姓名', type: 'string', sortable: true },
-    { name: 'avatar', label: '头像', type: 'string' },
-    { name: 'email', label: '邮箱', type: 'string' },
-    { name: 'status', label: '状态', type: 'select', dict: 'status' }
-  ],
-  selection: true, // 启用多选
-  expand: true, // 启用展开行
-  rowKey: 'id',
-  pagination: {
-    pageSize: 20,
-    pageSizes: [10, 20, 50, 100]
-  }
+import { ref } from 'vue'
+import { SchemaTable } from 'vectra-crud'
+
+const tableData = ref([])
+const loading = ref(false)
+const pagination = ref({
+  page: 1,
+  pageSize: 10,
+  total: 0
+})
+
+const onSelectionChange = (selection) => {
+  console.log('选中的行:', selection)
+}
+
+const onSortChange = ({ prop, order }) => {
+  console.log('排序变化:', prop, order)
+}
+
+const onPageChange = ({ page, pageSize }) => {
+  pagination.value.page = page
+  pagination.value.pageSize = pageSize
+  // 重新加载数据
 }
 </script>
 ```
 
 ### SchemaForm
 
-基于 Schema 的表单组件，支持多种布局方式。
+基于 Schema 的表单组件。
 
 ```vue
 <template>
   <SchemaForm
+    ref="formRef"
     :schema="formSchema"
-    :model="formModel"
+    :model-value="formData"
+    :mode="mode"
     :layout="layout"
-    @submit="handleSubmit"
-    @cancel="handleCancel"
-  >
-    <template #field-customField="{ field, model }">
-      <CustomFormComponent v-model="model[field.name]" />
-    </template>
-  </SchemaForm>
+    @update:model-value="onFormChange"
+    @validate="onValidate"
+  />
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { SchemaForm } from 'vectra-crud'
+
+const formRef = ref()
+const formData = ref({})
+
 const formSchema = {
-  fields: [
+  columns: [
     {
-      name: 'name',
-      label: '名称',
+      prop: 'name',
+      label: '姓名',
       type: 'string',
-      rules: [{ required: true, message: '请输入名称' }],
-      gridConfig: { span: 12 }
+      required: true,
+      rules: [
+        { required: true, message: '请输入姓名' },
+        { min: 2, max: 20, message: '长度在 2 到 20 个字符' }
+      ]
     },
     {
-      name: 'email',
+      prop: 'email',
       label: '邮箱',
       type: 'string',
-      rules: [{ type: 'email' }],
-      gridConfig: { span: 12 }
+      rules: [
+        { type: 'email', message: '请输入正确的邮箱地址' }
+      ]
     },
     {
-      name: 'phone',
-      label: '电话',
-      type: 'string',
-      gridConfig: { span: 12 }
-    },
-    {
-      name: 'address',
-      label: '地址',
-      type: 'textarea',
-      gridConfig: { span: 24 }
+      prop: 'age',
+      label: '年龄',
+      type: 'number',
+      formProps: {
+        min: 1,
+        max: 150
+      }
     }
-  ],
-  layout: 'grid', // grid | tabs | steps
-  labelWidth: '100px',
-  labelPosition: 'right'
+  ]
 }
 
-const formModel = ref({})
-const layout = ref('grid')
+const mode = ref('create') // create | edit | view
+const layout = ref('horizontal') // horizontal | vertical | inline
 
-const handleSubmit = async (values) => {
-  console.log('提交表单:', values)
+const onFormChange = (data) => {
+  formData.value = data
+}
+
+const onValidate = async () => {
+  const valid = await formRef.value.validate()
+  if (valid) {
+    console.log('表单验证通过:', formData.value)
+  }
 }
 </script>
 ```
 
 ### SubForm
 
-子表单组件，用于编辑嵌套的数组数据。
+子表单组件,用于处理一对多关系。
 
 ```vue
 <template>
-  <SchemaForm :schema="schema" :model="formModel">
-    <template #field-items>
-      <SubForm
-        v-model="formModel.items"
-        :schema="subFormSchema"
-        :mode="mode"
-        :max="10"
-      />
-    </template>
-  </SchemaForm>
+  <SubForm
+    :schema="subFormSchema"
+    :model-value="subFormData"
+    @update:model-value="onSubFormChange"
+  />
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { SubForm } from 'vectra-crud'
+
+const subFormData = ref([])
+
 const subFormSchema = {
-  fields: [
-    { name: 'name', label: '名称', type: 'string', required: true },
-    { name: 'quantity', label: '数量', type: 'number', required: true },
-    { name: 'price', label: '价格', type: 'number', required: true },
-    { name: 'amount', label: '金额', type: 'number', disabled: true }
+  columns: [
+    {
+      prop: 'product',
+      label: '产品',
+      type: 'dict',
+      dict: 'products',
+      required: true
+    },
+    {
+      prop: 'quantity',
+      label: '数量',
+      type: 'number',
+      required: true,
+      formProps: { min: 1 }
+    },
+    {
+      prop: 'price',
+      label: '单价',
+      type: 'number',
+      required: true
+    },
+    {
+      prop: 'total',
+      label: '小计',
+      type: 'number',
+      readonly: true,
+      compute: (row) => (row.quantity || 0) * (row.price || 0)
+    }
   ]
 }
 
-const mode = ref('table') // table | card | inline
+const onSubFormChange = (data) => {
+  subFormData.value = data
+}
+</script>
+```
 
-const formModel = ref({
-  items: [
-    { name: '商品1', quantity: 1, price: 100, amount: 100 }
+### SubTableForm
+
+以表格形式展示的子表单,支持内联编辑。
+
+```vue
+<template>
+  <SubTableForm
+    :schema="subTableSchema"
+    :model-value="orderItems"
+    :inline-edit="true"
+    @update:model-value="onItemsChange"
+  />
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { SubTableForm } from 'vectra-crud'
+
+const orderItems = ref([
+  { product: '001', quantity: 2, price: 100 },
+  { product: '002', quantity: 1, price: 200 }
+])
+
+const subTableSchema = {
+  columns: [
+    {
+      prop: 'product',
+      label: '产品',
+      type: 'dict',
+      dict: 'products',
+      required: true
+    },
+    {
+      prop: 'quantity',
+      label: '数量',
+      type: 'number',
+      required: true
+    },
+    {
+      prop: 'price',
+      label: '单价',
+      type: 'number',
+      required: true
+    },
+    {
+      prop: 'total',
+      label: '小计',
+      type: 'number',
+      readonly: true,
+      compute: (row) => row.quantity * row.price
+    }
   ]
-})
+}
 </script>
 ```
 
 ### KeyValueEditor
 
-键值对编辑器，用于编辑对象类型的数据。
+键值对编辑器,用于编辑 JSON 对象或动态字段。
 
 ```vue
 <template>
   <KeyValueEditor
-    v-model="config"
+    :model-value="config"
     :key-options="keyOptions"
     :value-type="valueType"
-    :allow-add="true"
-    :allow-delete="true"
+    @update:model-value="onConfigChange"
   />
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { KeyValueEditor } from 'vectra-crud'
+
 const config = ref({
-  apiUrl: 'https://api.example.com',
-  timeout: '5000',
-  retryCount: '3'
+  host: 'localhost',
+  port: 3000,
+  debug: true
 })
 
 const keyOptions = [
-  { label: 'API地址', value: 'apiUrl' },
-  { label: '超时时间', value: 'timeout' },
-  { label: '重试次数', value: 'retryCount' }
+  { label: '主机', value: 'host' },
+  { label: '端口', value: 'port' },
+  { label: '调试模式', value: 'debug' }
 ]
 
-const valueType = 'string' // string | number | boolean | json
+const valueType = 'auto' // auto | string | number | boolean
 </script>
 ```
 
 ### DictSelect
 
-字典选择器，支持本地和远程数据源。
+字典选择器组件。
 
 ```vue
 <template>
@@ -445,1345 +606,1228 @@ const valueType = 'string' // string | number | boolean | json
     v-model="selectedValue"
     dict="userStatus"
     :multiple="false"
-    :remote="true"
-    :props="{ label: 'name', value: 'id' }"
+    :clearable="true"
+    placeholder="请选择状态"
   />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { DictSelect } from 'vectra-crud'
 
-const selectedValue = ref('')
+const selectedValue = ref(null)
+</script>
+```
 
-// 注册字典提供者
-import { useDictProvider } from 'vectra-crud'
+### DictTag
 
-const dictProvider = useDictProvider()
+字典标签组件,用于显示字典值对应的标签。
 
-// 本地字典
-dictProvider.register('userStatus', [
-  { label: '启用', value: 1 },
-  { label: '禁用', value: 0 }
-])
+```vue
+<template>
+  <DictTag dict="userStatus" :value="status" />
+</template>
 
-// 远程字典
-dictProvider.register('userRole', async () => {
-  const res = await fetch('/api/dict/userRole')
-  return res.json()
-})
+<script setup lang="ts">
+import { ref } from 'vue'
+import { DictTag } from 'vectra-crud'
+
+const status = ref(1)
 </script>
 ```
 
 ### Upload
 
-上传组件，支持多种上传方式。
+文件上传组件。
 
 ```vue
 <template>
   <Upload
     v-model="fileList"
-    :action="uploadAction"
+    :action="uploadUrl"
     :max-count="5"
-    :max-size="10 * 1024 * 1024"
-    :accept="['image/*', '.pdf']"
-    :list-type="listType"
-    :before-upload="beforeUpload"
-    @success="handleSuccess"
+    :max-size="10"
+    accept="image/*"
+    @success="onUploadSuccess"
+    @error="onUploadError"
   />
 </template>
 
 <script setup lang="ts">
-const fileList = ref([])
-const uploadAction = '/api/upload'
-const listType = ref('picture-card') // text | picture | picture-card
+import { ref } from 'vue'
+import { Upload } from 'vectra-crud'
 
-const beforeUpload = (file) => {
-  if (file.size > 10 * 1024 * 1024) {
-    ElMessage.error('文件大小不能超过 10MB')
-    return false
-  }
-  return true
+const fileList = ref([])
+const uploadUrl = '/api/upload'
+
+const onUploadSuccess = (response) => {
+  console.log('上传成功:', response)
 }
 
-const handleSuccess = (response, file) => {
-  console.log('上传成功:', response, file)
+const onUploadError = (error) => {
+  console.error('上传失败:', error)
 }
 </script>
 ```
 
 ### IconPicker
 
-图标选择器。
+图标选择器组件。
 
 ```vue
 <template>
   <IconPicker
     v-model="selectedIcon"
     :icon-set="iconSet"
-    :searchable="true"
   />
 </template>
 
 <script setup lang="ts">
-const selectedIcon = ref('el-icon-user')
+import { ref } from 'vue'
+import { IconPicker } from 'vectra-crud'
+
+const selectedIcon = ref('user')
 const iconSet = 'element-plus' // element-plus | ant-design | custom
 </script>
 ```
 
 ### ColumnSetting
 
-列设置组件，用于动态显示/隐藏表格列。
+列设置组件,用于动态显示/隐藏表格列。
 
 ```vue
 <template>
   <ColumnSetting
-    v-model:columns="visibleColumns"
-    :all-columns="allColumns"
-    @change="handleColumnChange"
+    v-model="visibleColumns"
+    :columns="allColumns"
+    @change="onColumnChange"
   />
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { ColumnSetting } from 'vectra-crud'
+
 const allColumns = [
-  { name: 'id', label: 'ID', fixed: true },
-  { name: 'name', label: '姓名' },
-  { name: 'email', label: '邮箱' },
-  { name: 'phone', label: '电话' },
-  { name: 'status', label: '状态' }
+  { prop: 'id', label: 'ID', fixed: true },
+  { prop: 'name', label: '姓名' },
+  { prop: 'email', label: '邮箱' },
+  { prop: 'age', label: '年龄' }
 ]
 
-const visibleColumns = ref(['id', 'name', 'email', 'status'])
+const visibleColumns = ref(['id', 'name', 'email'])
 
-const handleColumnChange = (columns) => {
-  console.log('列配置变更:', columns)
+const onColumnChange = (columns) => {
+  console.log('可见列:', columns)
 }
 </script>
 ```
 
-## 插件系统
+## 🔌 插件系统
 
-### 列持久化插件
+Vectra CRUD 提供了丰富的插件来扩展功能。
 
-保存用户的列设置到本地存储。
+### columnPersist - 列持久化
 
-```typescript
-import { ColumnPersistPlugin } from 'vectra-crud/plugins'
-
-const plugins = [
-  ColumnPersistPlugin({
-    storageKey: 'user-table-columns', // 存储键名
-    storage: localStorage, // 存储对象
-    expires: 7 * 24 * 60 * 60 * 1000 // 过期时间（毫秒）
-  })
-]
-```
-
-### 导出插件
-
-支持导出表格数据为 Excel、CSV 等格式。
+保存用户的列显示设置。
 
 ```typescript
-import { ExportPlugin } from 'vectra-crud/plugins'
+import { useColumnPersist } from 'vectra-crud'
 
-const plugins = [
-  ExportPlugin({
-    formats: ['xlsx', 'csv', 'json'], // 支持的格式
-    filename: '用户数据', // 文件名
-    sheetName: 'Users', // Excel 工作表名
-    beforeExport: (data) => {
-      // 导出前处理数据
-      return data
-    },
-    columns: [
-      { field: 'name', label: '姓名' },
-      { field: 'email', label: '邮箱' },
-      {
-        field: 'status',
-        label: '状态',
-        formatter: (val) => val === 1 ? '启用' : '禁用'
-      }
-    ]
-  })
-]
-```
-
-### 导入插件
-
-支持从 Excel、CSV 导入数据。
-
-```typescript
-import { ImportPlugin } from 'vectra-crud/plugins'
-
-const plugins = [
-  ImportPlugin({
-    accept: ['.xlsx', '.xls', '.csv'], // 接受的文件类型
-    template: '/templates/user-import-template.xlsx', // 导入模板
-    mapping: {
-      '姓名': 'name',
-      '邮箱': 'email',
-      '电话': 'phone'
-    },
-    beforeImport: (data) => {
-      // 导入前验证和转换数据
-      return data.map(row => ({
-        ...row,
-        status: row.status === '启用' ? 1 : 0
-      }))
-    },
-    onSuccess: (result) => {
-      ElMessage.success(`成功导入 ${result.success} 条，失败 ${result.failed} 条`)
-    }
-  })
-]
-```
-
-### 行内编辑插件
-
-支持在表格中直接编辑数据。
-
-```typescript
-import { InlineEditPlugin } from 'vectra-crud/plugins'
-
-const plugins = [
-  InlineEditPlugin({
-    mode: 'cell', // cell | row
-    trigger: 'click', // click | dblclick
-    saveOn: 'blur', // blur | enter | manual
-    editableFields: ['name', 'email', 'phone'], // 可编辑字段
-    beforeEdit: (row, field) => {
-      // 编辑前验证
-      return true
-    },
-    afterEdit: async (row, field, newValue, oldValue) => {
-      // 编辑后保存
-      await api.updateUser(row.id, { [field]: newValue })
-    }
-  })
-]
-```
-
-### 行展开插件
-
-支持展开行显示详细信息。
-
-```typescript
-import { RowExpandPlugin } from 'vectra-crud/plugins'
-
-const plugins = [
-  RowExpandPlugin({
-    expandRowKeys: [], // 默认展开的行
-    expandOnRowClick: false, // 点击行展开
-    render: (row) => {
-      // 自定义展开内容渲染
-      return h('div', { class: 'expand-content' }, [
-        h('p', `详细描述: ${row.description}`),
-        h('p', `创建时间: ${row.createTime}`)
-      ])
-    }
-  })
-]
-```
-
-### 虚拟滚动插件
-
-优化大数据量表格性能。
-
-```typescript
-import { VirtualScrollPlugin } from 'vectra-crud/plugins'
-
-const plugins = [
-  VirtualScrollPlugin({
-    height: 600, // 表格高度
-    itemSize: 50, // 每行高度
-    buffer: 5, // 缓冲区行数
-    threshold: 100 // 启用虚拟滚动的阈值
-  })
-]
-```
-
-### 批量操作插件
-
-支持批量操作选中的数据。
-
-```typescript
-import { BulkActionsPlugin } from 'vectra-crud/plugins'
-
-const plugins = [
-  BulkActionsPlugin({
-    actions: [
-      {
-        label: '批量启用',
-        type: 'primary',
-        handler: async (selectedRows) => {
-          await api.batchUpdateStatus(selectedRows.map(r => r.id), 1)
-          ElMessage.success('批量启用成功')
-        }
-      },
-      {
-        label: '批量禁用',
-        type: 'danger',
-        confirm: true,
-        confirmMessage: '确认批量禁用选中的用户吗？',
-        handler: async (selectedRows) => {
-          await api.batchUpdateStatus(selectedRows.map(r => r.id), 0)
-        }
-      },
-      {
-        label: '批量删除',
-        type: 'danger',
-        confirm: true,
-        handler: async (selectedRows) => {
-          await api.batchDelete(selectedRows.map(r => r.id))
-        }
-      }
-    ]
-  })
-]
-```
-
-### 权限插件
-
-基于权限控制按钮和操作的显示。
-
-```typescript
-import { PermissionPlugin } from 'vectra-crud/plugins'
-
-const plugins = [
-  PermissionPlugin({
-    permissions: {
-      create: 'user:create',
-      update: 'user:update',
-      delete: 'user:delete',
-      export: 'user:export',
-      import: 'user:import'
-    },
-    check: (permission) => {
-      // 自定义权限检查逻辑
-      return userPermissions.includes(permission)
-    }
-  })
-]
-```
-
-## UI 适配器抽象
-
-Vectra CRUD 通过适配器模式支持多种 UI 框架。
-
-### 创建自定义适配器
-
-```typescript
-import { defineAdapter } from 'vectra-crud'
-
-export default defineAdapter({
-  name: 'custom-ui',
-  
-  components: {
-    // 表单组件映射
-    form: {
-      string: CustomInput,
-      number: CustomInputNumber,
-      select: CustomSelect,
-      date: CustomDatePicker,
-      // ... 更多组件
-    },
-    
-    // 表格组件
-    table: CustomTable,
-    tableColumn: CustomTableColumn,
-    
-    // 其他基础组件
-    button: CustomButton,
-    dialog: CustomDialog,
-    message: CustomMessage
-  },
-  
-  // 组件属性转换
-  transformProps: {
-    button: (props) => ({
-      ...props,
-      type: props.type === 'primary' ? 'default' : props.type
-    })
-  },
-  
-  // 事件名称转换
-  transformEvents: {
-    button: {
-      click: 'onClick'
-    }
-  }
-})
-```
-
-### 使用适配器
-
-```typescript
-import CustomAdapter from './adapters/custom-adapter'
-
-app.use(VectraCrud, {
-  adapter: CustomAdapter
-})
-```
-
-## 数据源接口
-
-数据源接口定义了与后端 API 交互的标准方法。
-
-```typescript
-import { defineDataSource } from 'vectra-crud'
-
-const dataSource = defineDataSource({
-  // 列表查询
-  list: async (params) => {
-    const { page, pageSize, search, sort, filters } = params
-    
-    const res = await fetch('/api/users', {
-      method: 'POST',
-      body: JSON.stringify({
-        page,
-        pageSize,
-        ...search,
-        ...filters,
-        orderBy: sort?.field,
-        orderDir: sort?.order
-      })
-    })
-    
-    const data = await res.json()
-    
-    return {
-      data: data.list,
-      total: data.total,
-      page: data.page,
-      pageSize: data.pageSize
-    }
-  },
-  
-  // 详情查询
-  detail: async (id) => {
-    const res = await fetch(`/api/users/${id}`)
-    return res.json()
-  },
-  
-  // 创建
-  create: async (data) => {
-    const res = await fetch('/api/users', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    })
-    return res.json()
-  },
-  
-  // 更新
-  update: async (id, data) => {
-    const res = await fetch(`/api/users/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    })
-    return res.json()
-  },
-  
-  // 删除
-  delete: async (id) => {
-    await fetch(`/api/users/${id}`, {
-      method: 'DELETE'
-    })
-  },
-  
-  // 批量删除
-  batchDelete: async (ids) => {
-    await fetch('/api/users/batch', {
-      method: 'DELETE',
-      body: JSON.stringify({ ids })
-    })
-  }
-})
-```
-
-### RESTful 数据源助手
-
-```typescript
-import { createRestDataSource } from 'vectra-crud'
-
-const dataSource = createRestDataSource({
-  baseURL: '/api/users',
-  // 自定义请求配置
-  requestConfig: {
-    headers: {
-      'Authorization': 'Bearer token'
-    }
-  },
-  // 响应转换
-  transformResponse: (res) => ({
-    data: res.data.list,
-    total: res.data.total
-  })
-})
-```
-
-### GraphQL 数据源
-
-```typescript
-import { createGraphQLDataSource } from 'vectra-crud'
-
-const dataSource = createGraphQLDataSource({
-  endpoint: '/graphql',
-  queries: {
-    list: `
-      query Users($page: Int, $pageSize: Int) {
-        users(page: $page, pageSize: $pageSize) {
-          items { id name email }
-          total
-        }
-      }
-    `,
-    detail: `
-      query User($id: ID!) {
-        user(id: $id) { id name email phone }
-      }
-    `
-  },
-  mutations: {
-    create: `
-      mutation CreateUser($input: UserInput!) {
-        createUser(input: $input) { id }
-      }
-    `,
-    update: `
-      mutation UpdateUser($id: ID!, $input: UserInput!) {
-        updateUser(id: $id, input: $input) { id }
-      }
-    `
-  }
-})
-```
-
-## 字典提供者
-
-字典提供者用于管理和获取字典数据。
-
-```typescript
-import { useDictProvider } from 'vectra-crud'
-
-const dictProvider = useDictProvider()
-
-// 注册本地字典
-dictProvider.register('gender', [
-  { label: '男', value: 'M' },
-  { label: '女', value: 'F' }
-])
-
-// 注册远程字典
-dictProvider.register('department', async () => {
-  const res = await fetch('/api/dict/departments')
-  return res.json()
+const { load, save } = useColumnPersist({
+  key: 'user-table-columns', // 存储键名
+  storage: localStorage      // 存储方式
 })
 
-// 带缓存的远程字典
-dictProvider.register('role', {
-  loader: async () => {
-    const res = await fetch('/api/dict/roles')
-    return res.json()
-  },
-  cache: true,
-  cacheTime: 5 * 60 * 1000 // 5分钟
-})
+// 加载设置
+const columns = load()
 
-// 获取字典数据
-const genders = await dictProvider.get('gender')
-
-// 获取字典标签
-const label = dictProvider.getLabel('gender', 'M') // "男"
-
-// 刷新字典缓存
-await dictProvider.refresh('role')
+// 保存设置
+save(columns)
 ```
 
-### 自定义字典提供者
+### export - 导出
 
-```typescript
-import { defineDictProvider } from 'vectra-crud'
-
-const customDictProvider = defineDictProvider({
-  async get(dictKey, params) {
-    // 自定义获取逻辑
-    const res = await fetch(`/api/dict/${dictKey}`, {
-      method: 'POST',
-      body: JSON.stringify(params)
-    })
-    return res.json()
-  },
-  
-  getLabel(dictKey, value) {
-    // 自定义标签获取逻辑
-    const dict = this.cache.get(dictKey)
-    return dict?.find(item => item.value === value)?.label
-  }
-})
-
-app.use(VectraCrud, {
-  dictProvider: customDictProvider
-})
-```
-
-## 权限系统
-
-Vectra CRUD 提供了细粒度的权限控制系统。
-
-### 基础权限配置
-
-```typescript
-const permission = {
-  // 页面级权限
-  view: 'user:view',
-  
-  // 操作权限
-  create: 'user:create',
-  update: 'user:update',
-  delete: 'user:delete',
-  export: 'user:export',
-  import: 'user:import',
-  
-  // 字段级权限
-  fields: {
-    salary: 'user:view:salary',
-    idCard: 'user:view:idcard'
-  },
-  
-  // 自定义权限检查
-  check: (permission) => {
-    return store.state.user.permissions.includes(permission)
-  }
-}
-```
-
-### 行级权限
-
-```typescript
-const schema = {
-  fields: [...],
-  permission: {
-    // 行操作权限
-    rowActions: {
-      update: (row) => {
-        // 只能编辑自己创建的数据
-        return row.creatorId === currentUserId
-      },
-      delete: (row) => {
-        // 只能删除草稿状态的数据
-        return row.status === 'draft'
-      }
-    }
-  }
-}
-```
-
-### 字段权限
-
-```typescript
-const schema = {
-  fields: [
-    {
-      name: 'salary',
-      label: '薪资',
-      type: 'number',
-      // 字段级权限
-      permission: 'user:view:salary',
-      // 或使用函数
-      permission: (context) => {
-        return context.user.role === 'admin'
-      }
-    }
-  ]
-}
-```
-
-## 生命周期钩子
-
-Vectra CRUD 提供了丰富的生命周期钩子。
-
-```typescript
-const hooks = {
-  // 搜索生命周期
-  beforeSearch: async (params) => {
-    console.log('搜索前', params)
-    // 可以修改搜索参数
-    return { ...params, extra: 'value' }
-  },
-  afterSearch: (result) => {
-    console.log('搜索后', result)
-  },
-  
-  // 创建生命周期
-  beforeCreate: async (data) => {
-    console.log('创建前', data)
-    // 数据验证
-    if (!data.name) {
-      throw new Error('名称不能为空')
-    }
-    return data
-  },
-  afterCreate: (result) => {
-    ElMessage.success('创建成功')
-  },
-  
-  // 更新生命周期
-  beforeUpdate: async (id, data) => {
-    console.log('更新前', id, data)
-    return data
-  },
-  afterUpdate: (result) => {
-    ElMessage.success('更新成功')
-  },
-  
-  // 删除生命周期
-  beforeDelete: async (id) => {
-    const confirmed = await ElMessageBox.confirm('确认删除吗？')
-    return confirmed
-  },
-  afterDelete: () => {
-    ElMessage.success('删除成功')
-  },
-  
-  // 表单生命周期
-  beforeFormOpen: (type, data) => {
-    console.log('表单打开前', type, data)
-  },
-  afterFormClose: (type, result) => {
-    console.log('表单关闭后', type, result)
-  },
-  
-  // 表单值变化
-  onFieldChange: (field, value, formData) => {
-    console.log('字段变化', field, value)
-    // 联动逻辑
-    if (field === 'country') {
-      formData.province = ''
-      formData.city = ''
-    }
-  }
-}
-```
-
-## 自定义渲染
-
-### 表格列自定义渲染
-
-```vue
-<template>
-  <CrudPage :schema="schema">
-    <!-- 使用插槽 -->
-    <template #column-avatar="{ row, column, index }">
-      <el-avatar :src="row.avatar" :size="40" />
-    </template>
-    
-    <!-- 使用 render 函数 -->
-    <template #column-status="{ row }">
-      <el-tag :type="getStatusType(row.status)">
-        {{ getStatusLabel(row.status) }}
-      </el-tag>
-    </template>
-  </CrudPage>
-</template>
-
-<script setup>
-// 在 Schema 中使用 render 函数
-const schema = {
-  fields: [
-    {
-      name: 'progress',
-      label: '进度',
-      type: 'number',
-      render: (h, { row }) => {
-        return h(ElProgress, {
-          percentage: row.progress,
-          strokeWidth: 6
-        })
-      }
-    }
-  ]
-}
-</script>
-```
-
-### 表单项自定义渲染
-
-```vue
-<template>
-  <CrudPage :schema="schema">
-    <template #form-customField="{ field, model, errors }">
-      <CustomComponent
-        v-model="model[field.name]"
-        :error="errors[field.name]"
-      />
-    </template>
-  </CrudPage>
-</template>
-
-<script setup>
-const schema = {
-  fields: [
-    {
-      name: 'richText',
-      label: '富文本',
-      type: 'custom',
-      render: (h, { model, field }) => {
-        return h(RichTextEditor, {
-          modelValue: model[field.name],
-          'onUpdate:modelValue': (val) => {
-            model[field.name] = val
-          }
-        })
-      }
-    }
-  ]
-}
-</script>
-```
-
-## 表单布局
-
-### Grid 布局
-
-```typescript
-const schema = {
-  fields: [
-    {
-      name: 'name',
-      label: '名称',
-      type: 'string',
-      gridConfig: { span: 12 } // 占用 12 列（共 24 列）
-    },
-    {
-      name: 'email',
-      label: '邮箱',
-      type: 'string',
-      gridConfig: { span: 12 }
-    },
-    {
-      name: 'address',
-      label: '地址',
-      type: 'string',
-      gridConfig: { span: 24 } // 占满整行
-    }
-  ],
-  formConfig: {
-    layout: 'grid',
-    grid: {
-      cols: 24,
-      gutter: 20
-    }
-  }
-}
-```
-
-### Tabs 布局
-
-```typescript
-const schema = {
-  fields: [
-    // 基本信息 tab
-    {
-      name: 'name',
-      label: '名称',
-      type: 'string',
-      tab: 'basic'
-    },
-    {
-      name: 'email',
-      label: '邮箱',
-      type: 'string',
-      tab: 'basic'
-    },
-    
-    // 详细信息 tab
-    {
-      name: 'phone',
-      label: '电话',
-      type: 'string',
-      tab: 'detail'
-    },
-    {
-      name: 'address',
-      label: '地址',
-      type: 'string',
-      tab: 'detail'
-    },
-    
-    // 其他信息 tab
-    {
-      name: 'remark',
-      label: '备注',
-      type: 'textarea',
-      tab: 'other'
-    }
-  ],
-  formConfig: {
-    layout: 'tabs',
-    tabs: [
-      { key: 'basic', label: '基本信息', icon: 'el-icon-user' },
-      { key: 'detail', label: '详细信息', icon: 'el-icon-document' },
-      { key: 'other', label: '其他信息', icon: 'el-icon-more' }
-    ]
-  }
-}
-```
-
-### Steps 布局
-
-```typescript
-const schema = {
-  fields: [
-    // 第一步
-    {
-      name: 'name',
-      label: '名称',
-      type: 'string',
-      step: 0
-    },
-    {
-      name: 'type',
-      label: '类型',
-      type: 'select',
-      step: 0
-    },
-    
-    // 第二步
-    {
-      name: 'config',
-      label: '配置',
-      type: 'json',
-      step: 1
-    },
-    
-    // 第三步
-    {
-      name: 'confirm',
-      label: '确认信息',
-      type: 'custom',
-      step: 2,
-      render: (h, { model }) => {
-        return h('div', [
-          h('p', `名称: ${model.name}`),
-          h('p', `类型: ${model.type}`)
-        ])
-      }
-    }
-  ],
-  formConfig: {
-    layout: 'steps',
-    steps: [
-      { title: '基本信息', description: '填写基本信息' },
-      { title: '详细配置', description: '填写详细配置' },
-      { title: '确认提交', description: '确认并提交' }
-    ]
-  }
-}
-```
-
-### 表单容器模式
-
-#### Dialog 模式（默认）
-
-```typescript
-const schema = {
-  formConfig: {
-    mode: 'dialog',
-    dialog: {
-      width: '800px',
-      title: {
-        create: '新增用户',
-        update: '编辑用户'
-      },
-      fullscreen: false,
-      draggable: true
-    }
-  }
-}
-```
-
-#### Drawer 模式
-
-```typescript
-const schema = {
-  formConfig: {
-    mode: 'drawer',
-    drawer: {
-      size: '60%',
-      direction: 'rtl', // rtl | ltr | ttb | btt
-      title: {
-        create: '新增用户',
-        update: '编辑用户'
-      }
-    }
-  }
-}
-```
-
-#### Inline 模式
-
-```typescript
-const schema = {
-  formConfig: {
-    mode: 'inline',
-    // 表单直接显示在页面中，不使用弹窗
-  }
-}
-```
-
-## 子表编辑
-
-子表编辑用于处理一对多关系的数据。
-
-### Table 模式
-
-```vue
-<template>
-  <SchemaForm :schema="schema" :model="formModel" />
-</template>
-
-<script setup>
-const schema = {
-  fields: [
-    {
-      name: 'orderNo',
-      label: '订单号',
-      type: 'string'
-    },
-    {
-      name: 'items',
-      label: '订单明细',
-      type: 'subform',
-      subform: {
-        mode: 'table',
-        fields: [
-          { name: 'productName', label: '商品名称', type: 'string' },
-          { name: 'quantity', label: '数量', type: 'number' },
-          { name: 'price', label: '单价', type: 'number' },
-          {
-            name: 'amount',
-            label: '金额',
-            type: 'number',
-            disabled: true,
-            computed: (row) => row.quantity * row.price
-          }
-        ],
-        min: 1,
-        max: 20,
-        addText: '添加明细',
-        deleteConfirm: true
-      }
-    }
-  ]
-}
-
-const formModel = ref({
-  orderNo: 'ORD20260111001',
-  items: []
-})
-</script>
-```
-
-### Card 模式
-
-```typescript
-const schema = {
-  fields: [
-    {
-      name: 'contacts',
-      label: '联系人',
-      type: 'subform',
-      subform: {
-        mode: 'card',
-        fields: [
-          { name: 'name', label: '姓名', type: 'string' },
-          { name: 'phone', label: '电话', type: 'string' },
-          { name: 'email', label: '邮箱', type: 'string' },
-          { name: 'isPrimary', label: '主要联系人', type: 'switch' }
-        ],
-        cardTitle: (row, index) => `联系人 ${index + 1}`,
-        collapsible: true
-      }
-    }
-  ]
-}
-```
-
-### Inline 模式
-
-```typescript
-const schema = {
-  fields: [
-    {
-      name: 'tags',
-      label: '标签',
-      type: 'subform',
-      subform: {
-        mode: 'inline',
-        fields: [
-          { name: 'name', label: '标签名', type: 'string' },
-          { name: 'color', label: '颜色', type: 'color' }
-        ],
-        addText: '添加标签'
-      }
-    }
-  ]
-}
-```
-
-## 完整示例
-
-### 用户管理示例
+导出表格数据为 Excel、CSV 等格式。
 
 ```vue
 <template>
   <CrudPage
     :schema="schema"
     :data-source="dataSource"
-    :plugins="plugins"
-    :permission="permission"
-    @before-create="handleBeforeCreate"
-    @after-create="handleAfterCreate"
-  >
-    <template #toolbar-left>
-      <el-button type="success" @click="handleBatchImport">
-        批量导入
-      </el-button>
-    </template>
+    :plugins="['export']"
+    :export-config="exportConfig"
+  />
+</template>
+
+<script setup lang="ts">
+const exportConfig = {
+  filename: '用户列表',
+  format: 'xlsx', // xlsx | csv | json
+  columns: ['name', 'email', 'age'], // 指定导出的列
+  beforeExport: (data) => {
+    // 数据预处理
+    return data
+  }
+}
+</script>
+```
+
+### import - 导入
+
+从 Excel、CSV 文件导入数据。
+
+```vue
+<template>
+  <CrudPage
+    :schema="schema"
+    :data-source="dataSource"
+    :plugins="['import']"
+    :import-config="importConfig"
+  />
+</template>
+
+<script setup lang="ts">
+const importConfig = {
+  template: '/templates/user-import.xlsx', // 导入模板
+  validate: (data) => {
+    // 数据验证
+    return { valid: true, errors: [] }
+  },
+  beforeImport: (data) => {
+    // 数据转换
+    return data
+  },
+  onSuccess: (result) => {
+    console.log('导入成功:', result)
+  }
+}
+</script>
+```
+
+### inlineEdit - 行内编辑
+
+支持在表格中直接编辑数据。
+
+```vue
+<template>
+  <CrudPage
+    :schema="schema"
+    :data-source="dataSource"
+    :plugins="['inlineEdit']"
+    :inline-edit-config="inlineEditConfig"
+  />
+</template>
+
+<script setup lang="ts">
+const inlineEditConfig = {
+  trigger: 'click', // click | dblclick
+  columns: ['name', 'email', 'age'], // 可编辑的列
+  showButtons: true, // 显示确认/取消按钮
+  onSave: async (row, oldRow) => {
+    // 保存逻辑
+    await dataSource.update(row.id, row)
+  }
+}
+</script>
+```
+
+### rowExpand - 行展开
+
+支持展开行显示详细信息。
+
+```vue
+<template>
+  <CrudPage
+    :schema="schema"
+    :data-source="dataSource"
+    :plugins="['rowExpand']"
+    :row-expand-config="rowExpandConfig"
+  />
+</template>
+
+<script setup lang="ts">
+const rowExpandConfig = {
+  render: (row) => {
+    // 自定义展开内容渲染
+    return h('div', [
+      h('p', `详细地址: ${row.address}`),
+      h('p', `备注: ${row.remark}`)
+    ])
+  },
+  // 或使用组件
+  component: DetailComponent,
+  props: (row) => ({ data: row })
+}
+</script>
+```
+
+### virtualScroll - 虚拟滚动
+
+大数据量时使用虚拟滚动提升性能。
+
+```vue
+<template>
+  <CrudPage
+    :schema="schema"
+    :data-source="dataSource"
+    :plugins="['virtualScroll']"
+    :virtual-scroll-config="virtualScrollConfig"
+  />
+</template>
+
+<script setup lang="ts">
+const virtualScrollConfig = {
+  itemHeight: 50,        // 每行高度
+  buffer: 5,             // 缓冲行数
+  threshold: 100         // 启用虚拟滚动的阈值
+}
+</script>
+```
+
+### bulkActions - 批量操作
+
+支持批量删除、批量编辑等操作。
+
+```vue
+<template>
+  <CrudPage
+    :schema="schema"
+    :data-source="dataSource"
+    :plugins="['bulkActions']"
+    :bulk-actions-config="bulkActionsConfig"
+  />
+</template>
+
+<script setup lang="ts">
+const bulkActionsConfig = {
+  actions: [
+    {
+      label: '批量删除',
+      icon: 'delete',
+      type: 'danger',
+      confirm: '确认删除选中的记录吗?',
+      handler: async (selection) => {
+        const ids = selection.map(item => item.id)
+        await dataSource.bulkDelete(ids)
+      }
+    },
+    {
+      label: '批量启用',
+      icon: 'check',
+      handler: async (selection) => {
+        // 批量启用逻辑
+      }
+    }
+  ]
+}
+</script>
+```
+
+### permissions - 权限控制
+
+基于权限控制按钮和操作的显示。
+
+```vue
+<template>
+  <CrudPage
+    :schema="schema"
+    :data-source="dataSource"
+    :plugins="['permissions']"
+    :permissions="permissions"
+  />
+</template>
+
+<script setup lang="ts">
+const permissions = {
+  create: 'user:create',
+  update: 'user:update',
+  delete: 'user:delete',
+  export: 'user:export',
+  import: 'user:import'
+}
+</script>
+```
+
+配置权限检查函数:
+
+```typescript
+import { setPermissionChecker } from 'vectra-crud'
+
+setPermissionChecker((permission) => {
+  // 从用户权限列表中检查
+  const userPermissions = store.getters.permissions
+  return userPermissions.includes(permission)
+})
+```
+
+## 🎨 高级用法
+
+### 自定义渲染
+
+#### 表格列自定义渲染
+
+```typescript
+const schema = {
+  columns: [
+    {
+      prop: 'avatar',
+      label: '头像',
+      render: (value, row) => {
+        return h('img', {
+          src: value,
+          style: { width: '40px', height: '40px', borderRadius: '50%' }
+        })
+      }
+    },
+    {
+      prop: 'status',
+      label: '状态',
+      renderCell: (h, { row, column }) => {
+        const statusMap = {
+          1: { text: '在线', color: 'success' },
+          0: { text: '离线', color: 'danger' }
+        }
+        const status = statusMap[row.status]
+        return h('el-tag', { type: status.color }, () => status.text)
+      }
+    }
+  ]
+}
+```
+
+#### 表单项自定义渲染
+
+```typescript
+const schema = {
+  columns: [
+    {
+      prop: 'customField',
+      label: '自定义字段',
+      formRender: (h, { value, onChange }) => {
+        return h('div', [
+          h('input', {
+            value,
+            onInput: (e) => onChange(e.target.value)
+          }),
+          h('span', ` (${value?.length || 0}/100)`)
+        ])
+      }
+    }
+  ]
+}
+```
+
+### 表单布局
+
+#### 水平布局
+
+```vue
+<SchemaForm
+  :schema="schema"
+  layout="horizontal"
+  :label-width="120"
+/>
+```
+
+#### 垂直布局
+
+```vue
+<SchemaForm
+  :schema="schema"
+  layout="vertical"
+/>
+```
+
+#### 行内布局
+
+```vue
+<SchemaForm
+  :schema="schema"
+  layout="inline"
+/>
+```
+
+#### 自定义布局
+
+```typescript
+const schema = {
+  layout: 'grid',
+  gridProps: {
+    cols: 3,
+    gutter: 16
+  },
+  columns: [
+    {
+      prop: 'field1',
+      label: '字段1',
+      span: 1  // 占用1列
+    },
+    {
+      prop: 'field2',
+      label: '字段2',
+      span: 2  // 占用2列
+    },
+    {
+      prop: 'field3',
+      label: '字段3',
+      span: 3  // 占用3列(整行)
+    }
+  ]
+}
+```
+
+### 表单容器模式
+
+#### 对话框模式
+
+```vue
+<CrudPage
+  :schema="schema"
+  :data-source="dataSource"
+  form-container="dialog"
+  :dialog-props="{
+    width: '800px',
+    top: '10vh',
+    closeOnClickModal: false
+  }"
+/>
+```
+
+#### 抽屉模式
+
+```vue
+<CrudPage
+  :schema="schema"
+  :data-source="dataSource"
+  form-container="drawer"
+  :drawer-props="{
+    size: '50%',
+    direction: 'rtl'
+  }"
+/>
+```
+
+#### 页面模式
+
+```vue
+<CrudPage
+  :schema="schema"
+  :data-source="dataSource"
+  form-container="page"
+/>
+```
+
+### 子表单内联编辑
+
+```typescript
+const schema = {
+  columns: [
+    {
+      prop: 'orderItems',
+      label: '订单明细',
+      type: 'subTable',
+      subTableProps: {
+        inlineEdit: true,
+        showSummary: true,
+        summaryMethod: (data) => {
+          const total = data.reduce((sum, item) => {
+            return sum + (item.quantity * item.price)
+          }, 0)
+          return { total }
+        }
+      },
+      columns: [
+        {
+          prop: 'product',
+          label: '产品',
+          type: 'dict',
+          dict: 'products',
+          required: true
+        },
+        {
+          prop: 'quantity',
+          label: '数量',
+          type: 'number',
+          required: true,
+          onChange: (value, row) => {
+            // 数量变化时重新计算小计
+            row.total = value * row.price
+          }
+        },
+        {
+          prop: 'price',
+          label: '单价',
+          type: 'number',
+          required: true
+        },
+        {
+          prop: 'total',
+          label: '小计',
+          type: 'number',
+          readonly: true
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 字典系统
+
+#### 静态字典
+
+```typescript
+import { defineDict } from 'vectra-crud'
+
+defineDict('gender', [
+  { label: '男', value: 'M' },
+  { label: '女', value: 'F' }
+])
+
+defineDict('userStatus', [
+  { label: '正常', value: 1, type: 'success', color: '#67c23a' },
+  { label: '禁用', value: 0, type: 'danger', color: '#f56c6c' }
+])
+```
+
+#### 动态字典
+
+```typescript
+defineDict('department', async () => {
+  const response = await fetch('/api/departments')
+  const data = await response.json()
+  return data.map(item => ({
+    label: item.name,
+    value: item.id
+  }))
+})
+
+// 带缓存的动态字典
+defineDict('products', async () => {
+  const response = await fetch('/api/products')
+  return response.json()
+}, {
+  cache: true,
+  cacheTime: 5 * 60 * 1000 // 缓存5分钟
+})
+```
+
+#### 字典刷新
+
+```typescript
+import { refreshDict, refreshAllDicts } from 'vectra-crud'
+
+// 刷新单个字典
+await refreshDict('department')
+
+// 刷新所有字典
+await refreshAllDicts()
+```
+
+### 权限系统
+
+#### 配置权限检查器
+
+```typescript
+import { setPermissionChecker } from 'vectra-crud'
+
+setPermissionChecker((permission) => {
+  const userPermissions = store.state.user.permissions
+  if (Array.isArray(permission)) {
+    return permission.some(p => userPermissions.includes(p))
+  }
+  return userPermissions.includes(permission)
+})
+```
+
+#### 在组件中使用权限
+
+```vue
+<template>
+  <CrudPage
+    :schema="schema"
+    :data-source="dataSource"
+    :permissions="{
+      create: 'user:create',
+      update: 'user:update',
+      delete: 'user:delete',
+      export: ['user:export', 'admin']  // 支持多个权限(或关系)
+    }"
+  />
+</template>
+```
+
+#### 自定义按钮权限
+
+```typescript
+const schema = {
+  columns: [
+    {
+      prop: 'operation',
+      label: '操作',
+      type: 'operation',
+      buttons: [
+        {
+          label: '编辑',
+          permission: 'user:update',
+          onClick: (row) => {
+            // 编辑逻辑
+          }
+        },
+        {
+          label: '删除',
+          permission: 'user:delete',
+          type: 'danger',
+          onClick: (row) => {
+            // 删除逻辑
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 生命周期钩子
+
+```typescript
+const schema = {
+  columns: [...],
+  hooks: {
+    // 表单相关钩子
+    beforeCreate: async (data) => {
+      console.log('创建前', data)
+      // 可以修改数据或返回 false 阻止创建
+      return data
+    },
+    afterCreate: (response, data) => {
+      console.log('创建后', response, data)
+    },
+    beforeUpdate: async (id, data) => {
+      console.log('更新前', id, data)
+      return data
+    },
+    afterUpdate: (response, id, data) => {
+      console.log('更新后', response, id, data)
+    },
+    beforeDelete: async (id) => {
+      console.log('删除前', id)
+      // 返回 false 可以阻止删除
+      return true
+    },
+    afterDelete: (id) => {
+      console.log('删除后', id)
+    },
     
-    <template #column-avatar="{ row }">
-      <el-avatar :src="row.avatar" :size="40">
-        {{ row.name.charAt(0) }}
-      </el-avatar>
-    </template>
+    // 搜索相关钩子
+    beforeSearch: (params) => {
+      console.log('搜索前', params)
+      // 可以修改搜索参数
+      return params
+    },
+    afterSearch: (result, params) => {
+      console.log('搜索后', result, params)
+    },
     
-    <template #column-status="{ row }">
-      <el-switch
-        v-model="row.status"
-        :active-value="1"
-        :inactive-value="0"
-        @change="handleStatusChange(row)"
-      />
-    </template>
+    // 表单打开/关闭钩子
+    onFormOpen: (mode, data) => {
+      console.log('表单打开', mode, data)
+    },
+    onFormClose: () => {
+      console.log('表单关闭')
+    },
     
-    <template #action="{ row }">
-      <el-button link type="primary" @click="handleResetPassword(row)">
-        重置密码
-      </el-button>
-    </template>
-  </CrudPage>
+    // 数据变化钩子
+    onChange: (prop, value, row) => {
+      console.log('数据变化', prop, value, row)
+    }
+  }
+}
+```
+
+## 🎯 UI 适配器
+
+Vectra CRUD 支持多个主流 UI 框架:
+
+### Element Plus
+
+```typescript
+import ElementPlusAdapter from '@vectra-crud/element-plus'
+import 'element-plus/dist/index.css'
+
+app.use(VectraCrud, {
+  adapter: ElementPlusAdapter
+})
+```
+
+### Ant Design Vue
+
+```typescript
+import AntDesignVueAdapter from '@vectra-crud/ant-design-vue'
+import 'ant-design-vue/dist/antd.css'
+
+app.use(VectraCrud, {
+  adapter: AntDesignVueAdapter
+})
+```
+
+### Naive UI
+
+```typescript
+import NaiveUIAdapter from '@vectra-crud/naive-ui'
+
+app.use(VectraCrud, {
+  adapter: NaiveUIAdapter
+})
+```
+
+### 自定义适配器
+
+```typescript
+import { defineAdapter } from 'vectra-crud'
+
+const MyAdapter = defineAdapter({
+  name: 'my-adapter',
+  components: {
+    Table: MyTable,
+    Form: MyForm,
+    FormItem: MyFormItem,
+    Input: MyInput,
+    Select: MySelect,
+    DatePicker: MyDatePicker,
+    Button: MyButton,
+    Dialog: MyDialog,
+    Pagination: MyPagination
+    // ... 其他组件
+  },
+  props: {
+    table: {
+      // 表格属性映射
+      data: 'dataSource',
+      loading: 'loading'
+    },
+    form: {
+      // 表单属性映射
+      model: 'modelValue'
+    }
+  }
+})
+
+app.use(VectraCrud, {
+  adapter: MyAdapter
+})
+```
+
+## 📝 完整示例
+
+### Mock 数据源示例
+
+```typescript
+import { defineDataSource } from 'vectra-crud'
+
+// 模拟数据
+let users = [
+  { id: 1, name: '张三', email: 'zhangsan@example.com', age: 25, status: 1, dept: '001' },
+  { id: 2, name: '李四', email: 'lisi@example.com', age: 30, status: 1, dept: '002' },
+  { id: 3, name: '王五', email: 'wangwu@example.com', age: 28, status: 0, dept: '001' }
+]
+
+let nextId = 4
+
+const mockDataSource = defineDataSource({
+  async search(params) {
+    const { page = 1, pageSize = 10, search = {} } = params
+    
+    // 过滤
+    let filtered = users
+    if (search.name) {
+      filtered = filtered.filter(u => u.name.includes(search.name))
+    }
+    if (search.status !== undefined && search.status !== '') {
+      filtered = filtered.filter(u => u.status === search.status)
+    }
+    
+    // 排序
+    if (params.sort) {
+      filtered.sort((a, b) => {
+        const { prop, order } = params.sort
+        const aVal = a[prop]
+        const bVal = b[prop]
+        return order === 'asc' 
+          ? (aVal > bVal ? 1 : -1)
+          : (aVal < bVal ? 1 : -1)
+      })
+    }
+    
+    // 分页
+    const start = (page - 1) * pageSize
+    const end = start + pageSize
+    const list = filtered.slice(start, end)
+    
+    // 模拟网络延迟
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    return {
+      list,
+      total: filtered.length
+    }
+  },
+  
+  async detail(id) {
+    await new Promise(resolve => setTimeout(resolve, 200))
+    return users.find(u => u.id === id)
+  },
+  
+  async create(data) {
+    await new Promise(resolve => setTimeout(resolve, 500))
+    const user = { ...data, id: nextId++ }
+    users.push(user)
+    return user
+  },
+  
+  async update(id, data) {
+    await new Promise(resolve => setTimeout(resolve, 500))
+    const index = users.findIndex(u => u.id === id)
+    if (index !== -1) {
+      users[index] = { ...users[index], ...data }
+      return users[index]
+    }
+    throw new Error('用户不存在')
+  },
+  
+  async delete(id) {
+    await new Promise(resolve => setTimeout(resolve, 500))
+    const index = users.findIndex(u => u.id === id)
+    if (index !== -1) {
+      users.splice(index, 1)
+    }
+  },
+  
+  async bulkDelete(ids) {
+    await new Promise(resolve => setTimeout(resolve, 500))
+    users = users.filter(u => !ids.includes(u.id))
+  }
+})
+```
+
+### 真实 API 集成示例
+
+```typescript
+import axios from 'axios'
+import { defineDataSource } from 'vectra-crud'
+
+const apiClient = axios.create({
+  baseURL: '/api',
+  timeout: 10000
+})
+
+// 请求拦截器
+apiClient.interceptors.request.use(config => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+// 响应拦截器
+apiClient.interceptors.response.use(
+  response => response.data,
+  error => {
+    console.error('API Error:', error)
+    return Promise.reject(error)
+  }
+)
+
+const userDataSource = defineDataSource({
+  async search(params) {
+    const response = await apiClient.post('/users/search', params)
+    return {
+      list: response.data,
+      total: response.total
+    }
+  },
+  
+  async detail(id) {
+    const response = await apiClient.get(`/users/${id}`)
+    return response.data
+  },
+  
+  async create(data) {
+    const response = await apiClient.post('/users', data)
+    return response.data
+  },
+  
+  async update(id, data) {
+    const response = await apiClient.put(`/users/${id}`, data)
+    return response.data
+  },
+  
+  async delete(id) {
+    await apiClient.delete(`/users/${id}`)
+  },
+  
+  async bulkDelete(ids) {
+    await apiClient.post('/users/bulk-delete', { ids })
+  }
+})
+```
+
+### 完整的用户管理示例
+
+```vue
+<template>
+  <div class="user-management">
+    <CrudPage
+      ref="crudRef"
+      :schema="userSchema"
+      :data-source="userDataSource"
+      :plugins="plugins"
+      :permissions="permissions"
+      :table-props="tableProps"
+      :form-props="formProps"
+      :export-config="exportConfig"
+      :import-config="importConfig"
+      @create-success="onCreateSuccess"
+      @update-success="onUpdateSuccess"
+      @delete-success="onDeleteSuccess"
+    >
+      <template #toolbar-left>
+        <el-button @click="handleCustomAction">自定义操作</el-button>
+      </template>
+      
+      <template #toolbar-right>
+        <el-button @click="handleRefresh">刷新</el-button>
+      </template>
+    </CrudPage>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { CrudPage } from 'vectra-crud'
-import {
-  ColumnPersistPlugin,
-  ExportPlugin,
-  ImportPlugin,
-  BulkActionsPlugin,
-  PermissionPlugin
-} from 'vectra-crud/plugins'
+import { CrudPage, defineDict, setPermissionChecker } from 'vectra-crud'
+import { ElMessage } from 'element-plus'
 
-const schema = {
-  fields: [
+// 定义字典
+defineDict('userStatus', [
+  { label: '正常', value: 1, type: 'success' },
+  { label: '禁用', value: 0, type: 'danger' }
+])
+
+defineDict('department', async () => {
+  const response = await fetch('/api/departments')
+  return response.json()
+})
+
+defineDict('role', async () => {
+  const response = await fetch('/api/roles')
+  return response.json()
+})
+
+// 配置权限检查
+setPermissionChecker((permission) => {
+  const userPermissions = ['user:view', 'user:create', 'user:update', 'user:delete', 'user:export']
+  return userPermissions.includes(permission)
+})
+
+const crudRef = ref()
+
+// Schema 配置
+const userSchema = {
+  columns: [
     {
-      name: 'id',
+      prop: 'id',
       label: 'ID',
       type: 'number',
-      tableConfig: { width: 80, fixed: 'left' },
-      formConfig: { hidden: true }
+      tableProps: { width: 80, fixed: 'left' },
+      formProps: { disabled: true }
     },
     {
-      name: 'avatar',
+      prop: 'avatar',
       label: '头像',
       type: 'upload',
-      tableConfig: { width: 80 },
-      formConfig: {
-        uploadConfig: {
-          action: '/api/upload',
-          listType: 'picture-card',
-          limit: 1
-        }
+      uploadProps: {
+        action: '/api/upload',
+        accept: 'image/*',
+        maxSize: 2
+      },
+      render: (value) => {
+        return h('img', {
+          src: value,
+          style: { width: '40px', height: '40px', borderRadius: '50%' }
+        })
       }
     },
     {
-      name: 'name',
+      prop: 'name',
       label: '姓名',
       type: 'string',
-      rules: [{ required: true, message: '请输入姓名' }],
-      tableConfig: { width: 120, sortable: true },
-      searchConfig: { show: true }
-    },
-    {
-      name: 'username',
-      label: '用户名',
-      type: 'string',
+      required: true,
+      searchable: true,
       rules: [
-        { required: true, message: '请输入用户名' },
-        { min: 4, max: 20, message: '长度在 4 到 20 个字符' }
-      ],
-      tableConfig: { width: 120 },
-      searchConfig: { show: true }
+        { required: true, message: '请输入姓名' },
+        { min: 2, max: 20, message: '长度在 2 到 20 个字符' }
+      ]
     },
     {
-      name: 'email',
+      prop: 'email',
       label: '邮箱',
       type: 'string',
-      rules: [{ type: 'email', message: '请输入有效的邮箱' }],
-      tableConfig: { width: 180 }
+      required: true,
+      searchable: true,
+      rules: [
+        { required: true, message: '请输入邮箱' },
+        { type: 'email', message: '请输入正确的邮箱地址' }
+      ]
     },
     {
-      name: 'phone',
-      label: '电话',
+      prop: 'phone',
+      label: '手机号',
       type: 'string',
-      rules: [{ pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号' }],
-      tableConfig: { width: 120 }
+      rules: [
+        { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' }
+      ]
     },
     {
-      name: 'department',
+      prop: 'age',
+      label: '年龄',
+      type: 'number',
+      formProps: { min: 1, max: 150 }
+    },
+    {
+      prop: 'gender',
+      label: '性别',
+      type: 'dict',
+      dict: 'gender',
+      searchable: true
+    },
+    {
+      prop: 'department',
       label: '部门',
-      type: 'select',
+      type: 'dict',
       dict: 'department',
-      tableConfig: { width: 120 },
-      searchConfig: { show: true }
+      searchable: true,
+      required: true
     },
     {
-      name: 'role',
+      prop: 'role',
       label: '角色',
-      type: 'select',
+      type: 'dict',
       dict: 'role',
-      multiple: true,
-      tableConfig: { width: 150 },
-      searchConfig: { show: true }
+      dictProps: { multiple: true }
     },
     {
-      name: 'status',
+      prop: 'status',
       label: '状态',
-      type: 'select',
+      type: 'dict',
       dict: 'userStatus',
-      tableConfig: { width: 100 },
-      searchConfig: { show: true }
+      searchable: true,
+      defaultValue: 1
     },
     {
-      name: 'createTime',
-      label: '创建时间',
-      type: 'datetime',
-      tableConfig: { width: 160, sortable: true },
-      formConfig: { hidden: true },
-      searchConfig: {
-        show: true,
-        type: 'daterange'
-      }
-    },
-    {
-      name: 'remark',
+      prop: 'remark',
       label: '备注',
       type: 'textarea',
-      tableConfig: { hidden: true },
-      formConfig: { span: 24 }
+      formProps: { rows: 4 },
+      tableProps: { showOverflowTooltip: true }
+    },
+    {
+      prop: 'createTime',
+      label: '创建时间',
+      type: 'datetime',
+      formProps: { disabled: true },
+      searchable: true,
+      searchProps: { type: 'daterange' }
+    },
+    {
+      prop: 'updateTime',
+      label: '更新时间',
+      type: 'datetime',
+      formProps: { disabled: true }
     }
   ],
-  
-  formConfig: {
-    layout: 'tabs',
-    tabs: [
-      { key: 'basic', label: '基本信息' },
-      { key: 'detail', label: '详细信息' },
-      { key: 'permission', label: '权限配置' }
-    ],
-    labelWidth: '100px'
-  },
-  
-  tableConfig: {
-    rowKey: 'id',
-    selection: true,
-    pagination: {
-      pageSize: 20,
-      pageSizes: [10, 20, 50, 100]
+  hooks: {
+    beforeCreate: async (data) => {
+      console.log('创建用户前:', data)
+      return data
+    },
+    afterCreate: (response) => {
+      ElMessage.success('用户创建成功')
+    },
+    beforeUpdate: async (id, data) => {
+      console.log('更新用户前:', id, data)
+      return data
+    },
+    afterUpdate: () => {
+      ElMessage.success('用户更新成功')
+    },
+    beforeDelete: async (id) => {
+      // 可以在这里添加额外的确认逻辑
+      return true
+    },
+    afterDelete: () => {
+      ElMessage.success('用户删除成功')
     }
   }
 }
 
-const dataSource = {
-  list: async (params) => {
-    const res = await fetch('/api/users', {
+// 数据源
+const userDataSource = {
+  async search(params) {
+    const response = await fetch('/api/users/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params)
     })
-    return res.json()
+    return response.json()
   },
-  
-  detail: async (id) => {
-    const res = await fetch(`/api/users/${id}`)
-    return res.json()
+  async detail(id) {
+    const response = await fetch(`/api/users/${id}`)
+    return response.json()
   },
-  
-  create: async (data) => {
-    const res = await fetch('/api/users', {
+  async create(data) {
+    const response = await fetch('/api/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     })
-    return res.json()
+    return response.json()
   },
-  
-  update: async (id, data) => {
-    const res = await fetch(`/api/users/${id}`, {
+  async update(id, data) {
+    const response = await fetch(`/api/users/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     })
-    return res.json()
+    return response.json()
   },
-  
-  delete: async (id) => {
-    await fetch(`/api/users/${id}`, { method: 'DELETE' })
+  async delete(id) {
+    await fetch(`/api/users/${id}`, {
+      method: 'DELETE'
+    })
+  },
+  async bulkDelete(ids) {
+    await fetch('/api/users/bulk-delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids })
+    })
   }
 }
 
+// 插件配置
 const plugins = [
-  ColumnPersistPlugin({ storageKey: 'user-table-columns' }),
-  ExportPlugin({ filename: '用户数据' }),
-  ImportPlugin({ template: '/templates/user-import.xlsx' }),
-  BulkActionsPlugin({
-    actions: [
-      {
-        label: '批量启用',
-        type: 'primary',
-        handler: async (rows) => {
-          await batchUpdateStatus(rows.map(r => r.id), 1)
-        }
-      },
-      {
-        label: '批量禁用',
-        type: 'warning',
-        handler: async (rows) => {
-          await batchUpdateStatus(rows.map(r => r.id), 0)
-        }
-      },
-      {
-        label: '批量删除',
-        type: 'danger',
-        confirm: true,
-        handler: async (rows) => {
-          await batchDelete(rows.map(r => r.id))
-        }
-      }
-    ]
-  }),
-  PermissionPlugin({
-    permissions: {
-      create: 'user:create',
-      update: 'user:update',
-      delete: 'user:delete',
-      export: 'user:export',
-      import: 'user:import'
-    }
-  })
+  'columnPersist',
+  'export',
+  'import',
+  'inlineEdit',
+  'bulkActions',
+  'permissions'
 ]
 
-const permission = {
+// 权限配置
+const permissions = {
   create: 'user:create',
   update: 'user:update',
   delete: 'user:delete',
@@ -1791,179 +1835,207 @@ const permission = {
   import: 'user:import'
 }
 
-const handleBeforeCreate = (data) => {
-  console.log('创建前', data)
+// 表格配置
+const tableProps = {
+  stripe: true,
+  border: true,
+  size: 'default'
 }
 
-const handleAfterCreate = (result) => {
-  ElMessage.success('创建成功')
+// 表单配置
+const formProps = {
+  labelWidth: '100px',
+  layout: 'horizontal'
 }
 
-const handleStatusChange = async (row) => {
-  try {
-    await fetch(`/api/users/${row.id}/status`, {
-      method: 'PUT',
-      body: JSON.stringify({ status: row.status })
-    })
-    ElMessage.success('状态更新成功')
-  } catch (error) {
-    ElMessage.error('状态更新失败')
-    row.status = row.status === 1 ? 0 : 1
+// 导出配置
+const exportConfig = {
+  filename: '用户列表',
+  format: 'xlsx'
+}
+
+// 导入配置
+const importConfig = {
+  template: '/templates/user-import.xlsx',
+  onSuccess: (result) => {
+    ElMessage.success(`成功导入 ${result.success} 条记录`)
+    crudRef.value.refresh()
   }
 }
 
-const handleResetPassword = async (row) => {
-  await ElMessageBox.confirm('确认重置该用户密码吗？')
-  await fetch(`/api/users/${row.id}/reset-password`, { method: 'POST' })
-  ElMessage.success('密码重置成功')
+// 事件处理
+const onCreateSuccess = () => {
+  console.log('创建成功')
 }
 
-const handleBatchImport = () => {
-  // 批量导入逻辑
-}
-</script>
-```
-
-### 订单管理示例（含子表）
-
-```vue
-<template>
-  <CrudPage
-    :schema="schema"
-    :data-source="dataSource"
-  >
-    <template #column-totalAmount="{ row }">
-      <span style="color: #f56c6c; font-weight: bold;">
-        ¥{{ row.totalAmount.toFixed(2) }}
-      </span>
-    </template>
-  </CrudPage>
-</template>
-
-<script setup lang="ts">
-const schema = {
-  fields: [
-    {
-      name: 'orderNo',
-      label: '订单号',
-      type: 'string',
-      formConfig: { disabled: true, default: () => generateOrderNo() }
-    },
-    {
-      name: 'customer',
-      label: '客户',
-      type: 'select',
-      dict: 'customer',
-      rules: [{ required: true }]
-    },
-    {
-      name: 'orderDate',
-      label: '订单日期',
-      type: 'date',
-      rules: [{ required: true }],
-      formConfig: { default: () => new Date() }
-    },
-    {
-      name: 'items',
-      label: '订单明细',
-      type: 'subform',
-      rules: [
-        { required: true, message: '至少添加一条明细' },
-        { min: 1, message: '至少添加一条明细' }
-      ],
-      subform: {
-        mode: 'table',
-        fields: [
-          {
-            name: 'product',
-            label: '商品',
-            type: 'select',
-            dict: 'product',
-            rules: [{ required: true }],
-            width: 200
-          },
-          {
-            name: 'quantity',
-            label: '数量',
-            type: 'number',
-            rules: [{ required: true, min: 1 }],
-            width: 100,
-            formConfig: { min: 1, precision: 0 }
-          },
-          {
-            name: 'price',
-            label: '单价',
-            type: 'number',
-            rules: [{ required: true, min: 0 }],
-            width: 120,
-            formConfig: { min: 0, precision: 2 }
-          },
-          {
-            name: 'amount',
-            label: '金额',
-            type: 'number',
-            width: 120,
-            disabled: true,
-            computed: (row) => (row.quantity || 0) * (row.price || 0)
-          }
-        ],
-        min: 1,
-        summary: {
-          show: true,
-          fields: ['amount'],
-          formatter: (field, values) => {
-            if (field === 'amount') {
-              const total = values.reduce((sum, val) => sum + (val || 0), 0)
-              return `总计: ¥${total.toFixed(2)}`
-            }
-          }
-        }
-      }
-    },
-    {
-      name: 'totalAmount',
-      label: '订单总额',
-      type: 'number',
-      formConfig: { disabled: true },
-      computed: (formData) => {
-        return formData.items?.reduce((sum, item) => {
-          return sum + (item.quantity || 0) * (item.price || 0)
-        }, 0) || 0
-      }
-    },
-    {
-      name: 'remark',
-      label: '备注',
-      type: 'textarea',
-      formConfig: { span: 24 }
-    }
-  ],
-  
-  formConfig: {
-    layout: 'grid',
-    labelWidth: '100px'
-  }
+const onUpdateSuccess = () => {
+  console.log('更新成功')
 }
 
-const generateOrderNo = () => {
-  const now = new Date()
-  const timestamp = now.getTime()
-  return `ORD${timestamp}`
+const onDeleteSuccess = () => {
+  console.log('删除成功')
+}
+
+const handleCustomAction = () => {
+  console.log('自定义操作')
+}
+
+const handleRefresh = () => {
+  crudRef.value.refresh()
 }
 </script>
+
+<style scoped>
+.user-management {
+  padding: 20px;
+}
+</style>
 ```
 
-## 贡献
+## 🛠️ 开发指南
 
-欢迎贡献代码、报告问题或提出建议！
+### 本地开发
 
-## 许可证
+```bash
+# 克隆仓库
+git clone https://github.com/kowyzhux/vectra-crud.git
 
-MIT License
+# 安装依赖
+cd vectra-crud
+pnpm install
 
-## 相关链接
+# 启动开发服务器
+pnpm dev
 
-- [文档](https://vectra-crud.dev)
-- [GitHub](https://github.com/kowyzhux/vectra-crud)
-- [示例](https://vectra-crud.dev/examples)
-- [变更日志](./CHANGELOG.md)
+# 构建
+pnpm build
+
+# 运行测试
+pnpm test
+
+# 代码检查
+pnpm lint
+```
+
+### 目录结构
+
+```
+vectra-crud/
+├── packages/
+│   ├── core/              # 核心包
+│   │   ├── src/
+│   │   │   ├── components/   # 组件
+│   │   │   ├── composables/  # 组合式函数
+│   │   │   ├── plugins/      # 插件
+│   │   │   ├── types/        # 类型定义
+│   │   │   └── utils/        # 工具函数
+│   │   └── package.json
+│   ├── element-plus/      # Element Plus 适配器
+│   ├── ant-design-vue/    # Ant Design Vue 适配器
+│   └── naive-ui/          # Naive UI 适配器
+├── examples/              # 示例
+├── docs/                  # 文档
+└── package.json
+```
+
+### 贡献指南
+
+我们欢迎所有形式的贡献!
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/amazing-feature`)
+3. 提交更改 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 创建 Pull Request
+
+请确保:
+- 代码符合 ESLint 规范
+- 添加必要的测试
+- 更新相关文档
+
+## 📚 API 参考
+
+### CrudPage Props
+
+| 属性 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| schema | Schema | - | Schema 配置 |
+| dataSource | DataSource | - | 数据源 |
+| plugins | string[] | [] | 启用的插件列表 |
+| permissions | object | {} | 权限配置 |
+| tableProps | object | {} | 表格组件属性 |
+| formProps | object | {} | 表单组件属性 |
+| searchProps | object | {} | 搜索组件属性 |
+| formContainer | 'dialog' \| 'drawer' \| 'page' | 'dialog' | 表单容器类型 |
+| dialogProps | object | {} | 对话框属性 |
+| drawerProps | object | {} | 抽屉属性 |
+
+### CrudPage Events
+
+| 事件 | 参数 | 说明 |
+|------|------|------|
+| create-success | (data) | 创建成功 |
+| update-success | (data) | 更新成功 |
+| delete-success | (id) | 删除成功 |
+| search | (params) | 搜索 |
+| selection-change | (selection) | 选择变化 |
+
+### CrudPage Methods
+
+| 方法 | 参数 | 说明 |
+|------|------|------|
+| refresh | () | 刷新数据 |
+| openCreate | () | 打开创建表单 |
+| openEdit | (id) | 打开编辑表单 |
+| openView | (id) | 打开查看表单 |
+| delete | (id) | 删除记录 |
+| exportData | (options) | 导出数据 |
+
+### SchemaTable Props
+
+| 属性 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| schema | Schema | - | Schema 配置 |
+| data | any[] | [] | 表格数据 |
+| loading | boolean | false | 加载状态 |
+| pagination | Pagination | - | 分页配置 |
+| selection | boolean | false | 是否显示选择列 |
+
+### SchemaForm Props
+
+| 属性 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| schema | Schema | - | Schema 配置 |
+| modelValue | object | {} | 表单数据 |
+| mode | 'create' \| 'edit' \| 'view' | 'create' | 表单模式 |
+| layout | 'horizontal' \| 'vertical' \| 'inline' | 'horizontal' | 表单布局 |
+| labelWidth | string \| number | '100px' | 标签宽度 |
+
+### SchemaSearch Props
+
+| 属性 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| schema | Schema | - | Schema 配置 |
+| modelValue | object | {} | 搜索参数 |
+| collapsed | boolean | false | 是否折叠 |
+| collapseCount | number | 3 | 折叠时显示的数量 |
+
+## 🤝 社区与支持
+
+- [GitHub Issues](https://github.com/kowyzhux/vectra-crud/issues)
+- [GitHub Discussions](https://github.com/kowyzhux/vectra-crud/discussions)
+- [更新日志](./CHANGELOG.md)
+
+## 📄 许可证
+
+[MIT License](./LICENSE)
+
+Copyright (c) 2026 kowyzhux
+
+## ❤️ 鸣谢
+
+感谢所有为 Vectra CRUD 做出贡献的开发者!
+
+---
+
+如果这个项目对你有帮助,请给我们一个 ⭐️ Star!
