@@ -1,0 +1,13 @@
+node_modules
+dist
+*.local
+.DS_Store
+coverage
+.vscode
+.idea
+*.log
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock

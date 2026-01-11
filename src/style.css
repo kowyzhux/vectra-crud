@@ -1,0 +1,81 @@
+/* Vectra CRUD Base Styles */
+
+.crud-page {
+  padding: 16px;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.schema-search {
+  margin-bottom: 16px;
+}
+
+.schema-table {
+  background: #fff;
+}
+
+.crud-toolbar {
+  margin-bottom: 16px;
+}
+
+/* Common Component Styles */
+
+.subform-container,
+.keyvalue-editor,
+.upload-stub,
+.column-setting-panel {
+  width: 100%;
+}
+
+/* Spacing utilities */
+
+.mb-8 {
+  margin-bottom: 8px;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.mt-8 {
+  margin-top: 8px;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.p-8 {
+  padding: 8px;
+}
+
+.p-16 {
+  padding: 16px;
+}
+
+/* Flex utilities */
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.gap-8 {
+  gap: 8px;
+}
+
+.gap-16 {
+  gap: 16px;
+}
